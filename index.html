@@ -1,0 +1,1591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YT Downloader GUI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #FF0000;
+            --secondary-color: #282828;
+            --accent-color: #FF6B6B;
+            --dark-bg: #121212;
+            --card-bg: #1E1E1E;
+            --text-light: #A0A0A0;
+            --text-muted: #AAAAAA;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: var(--secondary-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar-brand {
+            color: var(--primary-color) !important;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-brand i {
+            margin-right: 8px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            background-color: var(--secondary-color);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+            border-radius: 10px 10px 0 0 !important;
+        }
+
+        .form-control, .form-select {
+            background-color: rgba(205, 205, 205, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-light);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(255, 0, 0, 0.25);
+            color: var(--text-light);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: #CC0000;
+            border-color: #CC0000;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .btn-secondary:hover, .btn-secondary:focus {
+            background-color: #383838;
+            border-color: #383838;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .progress {
+            height: 25px;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-bar {
+            background-color: var(--primary-color);
+        }
+
+        .log-container {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        .log-info {
+            color: #4FC3F7;
+        }
+
+        .log-success {
+            color: #81C784;
+        }
+
+        .log-warning {
+            color: #FFB74D;
+        }
+
+        .log-error {
+            color: #E57373;
+        }
+
+        .option-group {
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .option-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+        }
+
+        .option-title i {
+            margin-right: 8px;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+        }
+
+        .status-downloading {
+            background-color: rgba(79, 195, 247, 0.2);
+            color: #4FC3F7;
+        }
+
+        .status-completed {
+            background-color: rgba(129, 199, 132, 0.2);
+            color: #81C784;
+        }
+
+        .status-error {
+            background-color: rgba(229, 115, 115, 0.2);
+            color: #E57373;
+        }
+
+        .url-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+
+        .url-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .url-status {
+            margin-left: auto;
+            margin-right: 10px;
+        }
+
+        .url-progress {
+            width: 100px;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-right: 10px;
+        }
+
+        .url-progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+        }
+
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+            border-width: 0.15em;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+
+        .toast {
+            background-color: var(--card-bg);
+            color: var(--text-light);
+        }
+
+        .toast-header {
+            background-color: var(--secondary-color);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .toast-body {
+            background-color: var(--card-bg);
+        }
+
+        .version-info {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding: 20px 0;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .proxy-enabled {
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .proxy-auth-toggle {
+            cursor: pointer;
+            color: var(--primary-color);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .proxy-auth-toggle:hover {
+            text-decoration: underline;
+        }
+
+        .proxy-auth-fields {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .proxy-status {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+
+        .proxy-status.active {
+            background-color: #81C784;
+        }
+
+        .proxy-status.inactive {
+            background-color: var(--text-muted);
+        }
+
+        .nav-tabs .nav-link {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+        }
+
+        .nav-tabs .nav-link.active {
+            background-color: var(--card-bg);
+            color: var(--text-light);
+            border-color: rgba(255, 255, 255, 0.2);
+            border-bottom-color: transparent;
+        }
+
+        .tab-content {
+            background-color: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0 5px 5px 5px;
+            padding: 15px;
+        }
+
+        .auth-status {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+
+        .auth-status.active {
+            background-color: #81C784;
+        }
+
+        .auth-status.inactive {
+            background-color: var(--text-muted);
+        }
+
+        .browser-option {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .browser-option:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .browser-option.selected {
+            background-color: rgba(255, 0, 0, 0.2);
+            border: 1px solid var(--primary-color);
+        }
+
+        .browser-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+
+        .auth-method {
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .auth-method:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .auth-method.selected {
+            background-color: rgba(255, 0, 0, 0.2);
+            border: 1px solid var(--primary-color);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 10px 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .file-input-label:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .format-presets {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .format-preset {
+            padding: 8px 12px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .format-preset:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .format-preset.selected {
+            background-color: rgba(255, 0, 0, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .advanced-toggle {
+            cursor: pointer;
+            color: var(--primary-color);
+            font-size: 14px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .advanced-toggle:hover {
+            text-decoration: underline;
+        }
+
+        .advanced-options {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .language-flag {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-youtube"></i>
+                YouTube Downloader
+            </a>
+            <div class="d-flex align-items-center">
+                <span class="version-info">yt-dlp v2023.03.04</span>
+                <button class="btn btn-outline-light btn-sm ms-3" id="updateBtn">
+                    <i class="bi bi-arrow-clockwise"></i> Update
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-link-45deg"></i> URLs
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="urlInput" class="form-label">Enter URLs (one per line)</label>
+                            <textarea class="form-control" id="urlInput" rows="8" placeholder="https://www.youtube.com/watch?v=VIDEO_ID&#10;https://www.youtube.com/watch?v=ANOTHER_VIDEO_ID"></textarea>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <button class="btn btn-secondary" id="clearUrlsBtn">
+                                <i class="bi bi-trash"></i> Clear
+                            </button>
+                            <button class="btn btn-primary" id="downloadBtn">
+                                <i class="bi bi-download"></i> Download
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-list-check"></i> Download Queue
+                    </div>
+                    <div class="card-body">
+                        <div id="urlList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-gear"></i> Download Options
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-tabs mb-3" id="optionsTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab">Basic</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="auth-tab" data-bs-toggle="tab" data-bs-target="#auth" type="button" role="tab">Auth</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="proxy-tab" data-bs-toggle="tab" data-bs-target="#proxy" type="button" role="tab">Proxy</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="optionsTabContent">
+                            <div class="tab-pane fade show active" id="basic" role="tabpanel">
+                                <div class="option-group">
+                                    <div class="option-title">
+                                        <i class="bi bi-hd"></i> Quality & Format
+                                    </div>
+                                    <select class="form-select mb-2" id="qualitySelect">
+                                        <option value="">Best Quality</option>
+                                        <option value="bv*[height<=720]+ba/b[filesize<70M]">H.Z. Quality</option>
+                                        <option value="bestvideo+bestaudio">Best Video + Best Audio</option>
+                                        <option value="bestvideo[height<=1080]+bestaudio">1080p or lower</option>
+                                        <option value="bestvideo[height<=720]+bestaudio">720p or lower</option>
+                                        <option value="bestvideo[height<=480]+bestaudio">480p or lower</option>
+                                        <option value="bestvideo[height<=360]+bestaudio">360p or lower</option>
+                                        <option value="720p">720p</option>
+                                        <option value="480p">480p</option>
+                                        <option value="360p">360p</option>
+                                        <option value="worstvideo+bestaudio">Lowest Video + Best Audio</option>
+										<option value="worstvideo+worstaudio">Lowest Quality</option>
+                                    </select>
+                                    
+                                    <div class="advanced-toggle" id="advancedFormatToggle">
+                                        <i class="bi bi-chevron-right me-1"></i> Advanced Format Options
+                                    </div>
+                                    
+                                    <div class="advanced-options" id="advancedFormatOptions" style="display: none;">
+                                        <div class="mb-2">
+                                            <label class="form-label">Format Presets</label>
+                                            <div class="format-presets">
+                                                <div class="format-preset" data-format="137+140">1080p + AAC</div>
+                                                <div class="format-preset" data-format="136+140">720p + AAC</div>
+                                                <div class="format-preset" data-format="135+140">480p + AAC</div>
+                                                <div class="format-preset" data-format="134+140">360p + AAC</div>
+                                                <div class="format-preset" data-format="133+140">240p + AAC</div>
+                                                <div class="format-preset" data-format="160+140">144p + AAC</div>
+                                                <div class="format-preset" data-format="best[height<=1080]">Best 1080p</div>
+                                                <div class="format-preset" data-format="best[height<=720]">Best 720p</div>
+                                                <div class="format-preset" data-format="best[height<=480]">Best 480p</div>
+                                                <div class="format-preset" data-format="best[ext=mp4]">Best MP4</div>
+                                                <div class="format-preset" data-format="best[ext=webm]">Best WebM</div>
+                                                <div class="format-preset" data-format="best[filesize<100M]">Under 100MB</div>
+                                                <div class="format-preset" data-format="best[filesize<50M]">Under 50MB</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-2">
+                                            <label for="manualFormat" class="form-label">Manual Format String (-f)</label>
+                                            <input type="text" class="form-control" id="manualFormat" placeholder="e.g., 137+140 or bestvideo[height<=1080]+bestaudio">
+                                            <small class="help-text">Enter yt-dlp format selector directly. Overrides dropdown selection.</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="option-group">
+                                    <div class="option-title">
+                                        <i class="bi bi-file-earmark"></i> Output Format
+                                    </div>
+                                    <select class="form-select mb-2" id="formatSelect">
+                                        <option value="">Default</option>
+                                        <option value="mp4">MP4</option>
+                                        <option value="webm">WebM</option>
+                                        <option value="mkv">MKV</option>
+                                        <option value="avi">AVI</option>
+                                        <option value="mov">MOV</option>
+                                        <option value="mp3">MP3 (Audio Only)</option>
+                                        <option value="wav">WAV (Audio Only)</option>
+                                        <option value="flac">FLAC (Audio Only)</option>
+                                        <option value="aac">AAC (Audio Only)</option>
+                                        <option value="ogg">OGG (Audio Only)</option>
+                                        <option value="m4a">M4A (Audio Only)</option>
+                                    </select>
+                                </div>
+
+								<div class="option-group">
+									<div class="option-title">
+										<i class="bi bi-chat-text"></i> Subtitles
+									</div>
+									<div class="form-check mb-2">
+										<input class="form-check-input" type="checkbox" id="embedSubsCheck">
+										<label class="form-check-label" for="embedSubsCheck">
+											Embed Subtitles
+										</label>
+									</div>
+									<div class="form-check mb-2">
+										<input class="form-check-input" type="checkbox" id="writeSubCheck">
+										<label class="form-check-label" for="writeSubCheck">
+											Write Subtitles
+										</label>
+									</div>
+									<div class="form-check mb-2">
+										<input class="form-check-input" type="checkbox" id="persianSubsCheck">
+										<label class="form-check-label" for="persianSubsCheck">
+											<span class="language-flag">🇮🇷</span> Persian Subtitles (Auto-generated)
+										</label>
+									</div>
+									<div class="mb-2">
+										<label for="subtitleFormat" class="form-label">Subtitle Format</label>
+										<select class="form-select" id="subtitleFormat">
+											<option value="srt">SRT (Recommended)</option>
+											<option value="vtt">VTT (WebVTT)</option>
+											<option value="ass">ASS (Advanced SubStation Alpha)</option>
+											<option value="lrc">LRC (Lyrics)</option>
+										</select>
+									</div>
+									<div class="mb-2">
+										<label for="subtitleLangs" class="form-label">Subtitle Languages</label>
+										<input type="text" class="form-control" id="subtitleLangs" placeholder="en,fa,es" value="">
+										<small class="help-text">Comma-separated language codes (e.g., en,fa for English and Persian)</small>
+									</div>
+								</div>
+
+                                <div class="option-group">
+                                    <div class="option-title">
+                                        <i class="bi bi-sliders"></i> Additional Options
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="embedThumbCheck">
+                                        <label class="form-check-label" for="embedThumbCheck">
+                                            Embed Thumbnail
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="writeDescCheck">
+                                        <label class="form-check-label" for="writeDescCheck">
+                                            Write Description
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="writeMetaCheck">
+                                        <label class="form-check-label" for="writeMetaCheck">
+                                            Write Metadata
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="writeCommentsCheck">
+                                        <label class="form-check-label" for="writeCommentsCheck">
+                                            Write Comments
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="writeThumbnailCheck">
+                                        <label class="form-check-label" for="writeThumbnailCheck">
+                                            Write Thumbnail
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="option-group">
+                                    <div class="option-title">
+                                        <i class="bi bi-file-text"></i> Output Template
+                                    </div>
+                                    <input type="text" class="form-control mb-2" id="outputTemplate" placeholder="%(title)s (%(upload_date)s) [%(id)s].%(ext)s">
+                                    <small class="text-muted">Default: %(title)s (%(upload_date)s) [%(id)s].%(ext)s</small>
+                                </div>
+
+                                <div class="option-group">
+                                    <div class="option-title">
+                                        <i class="bi bi-folder"></i> Download Path
+                                    </div>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="downloadPath" placeholder="./downloads">
+                                        <button class="btn btn-outline-secondary" type="button" id="browsePathBtn">
+                                            <i class="bi bi-folder"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="auth" role="tabpanel">
+                                <div class="option-group">
+                                    <div class="option-title">
+                                        <i class="bi bi-shield-check"></i> Authentication
+                                        <span class="auth-status inactive" id="authStatus"></span>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="enableAuthCheck">
+                                        <label class="form-check-label" for="enableAuthCheck">
+                                            Enable Authentication
+                                        </label>
+                                    </div>
+                                    
+                                    <div id="authSettings" style="display: none;">
+                                        <div class="mb-3">
+                                            <label class="form-label">Authentication Method</label>
+                                            <div class="auth-method" id="browserCookiesMethod">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-browser-chrome me-2"></i>
+                                                    <div>
+                                                        <strong>Browser Cookies</strong>
+                                                        <div class="help-text">Import cookies from your browser</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="auth-method" id="manualLoginMethod">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-key me-2"></i>
+                                                    <div>
+                                                        <strong>Manual Login</strong>
+                                                        <div class="help-text">Enter username and password</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="auth-method" id="cookieFileMethod">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-file-earmark-text me-2"></i>
+                                                    <div>
+                                                        <strong>Cookie File</strong>
+                                                        <div class="help-text">Upload a cookies.txt file</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Browser Cookies Options -->
+                                        <div id="browserCookiesOptions" style="display: none;">
+                                            <div class="mb-3">
+                                                <label class="form-label">Select Browser</label>
+                                                <div class="browser-option" data-browser="chrome">
+                                                    <i class="bi bi-browser-chrome browser-icon"></i>
+                                                    <div>
+                                                        <strong>Google Chrome</strong>
+                                                        <div class="help-text">Import cookies from Chrome</div>
+                                                    </div>
+                                                </div>
+                                                <div class="browser-option" data-browser="firefox">
+                                                    <i class="bi bi-browser-firefox browser-icon"></i>
+                                                    <div>
+                                                        <strong>Mozilla Firefox</strong>
+                                                        <div class="help-text">Import cookies from Firefox</div>
+                                                    </div>
+                                                </div>
+                                                <div class="browser-option" data-browser="edge">
+                                                    <i class="bi bi-browser-edge browser-icon"></i>
+                                                    <div>
+                                                        <strong>Microsoft Edge</strong>
+                                                        <div class="help-text">Import cookies from Edge</div>
+                                                    </div>
+                                                </div>
+                                                <div class="browser-option" data-browser="safari">
+                                                    <i class="bi bi-browser-safari browser-icon"></i>
+                                                    <div>
+                                                        <strong>Safari</strong>
+                                                        <div class="help-text">Import cookies from Safari</div>
+                                                    </div>
+                                                </div>
+                                                <div class="browser-option" data-browser="brave">
+                                                    <i class="bi bi-shield-check browser-icon"></i>
+                                                    <div>
+                                                        <strong>Brave</strong>
+                                                        <div class="help-text">Import cookies from Brave</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="browserProfile" class="form-label">Profile Name (optional)</label>
+                                                <input type="text" class="form-control" id="browserProfile" placeholder="Default">
+                                                <small class="help-text">Leave empty for default profile</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Manual Login Options -->
+                                        <div id="manualLoginOptions" style="display: none;">
+                                            <div class="mb-3">
+                                                <label for="authUsername" class="form-label">Username/Email</label>
+                                                <input type="text" class="form-control" id="authUsername" placeholder="your-email@example.com">
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="authPassword" class="form-label">Password</label>
+                                                <input type="password" class="form-control" id="authPassword">
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="auth2fa" class="form-label">2FA Code (if enabled)</label>
+                                                <input type="text" class="form-control" id="auth2fa" placeholder="123456">
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Cookie File Options -->
+                                        <div id="cookieFileOptions" style="display: none;">
+                                            <div class="mb-3">
+                                                <label class="form-label">Upload Cookies File</label>
+                                                <div class="file-input-wrapper">
+                                                    <input type="file" id="cookieFile" accept=".txt">
+                                                    <label for="cookieFile" class="file-input-label">
+                                                        <i class="bi bi-upload me-2"></i>
+                                                        <span id="cookieFileName">Choose cookies.txt file</span>
+                                                    </label>
+                                                </div>
+                                                <small class="help-text">Export cookies from browser using extension like "Get cookies.txt LOCALLY"</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <button class="btn btn-sm btn-outline-light" id="testAuthBtn">
+                                            <i class="bi bi-check-circle"></i> Test Authentication
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="proxy" role="tabpanel">
+                                <div class="option-group">
+                                    <div class="option-title">
+                                        <i class="bi bi-shield-lock"></i> Proxy Settings
+                                        <span class="proxy-status inactive" id="proxyStatus"></span>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="enableProxyCheck">
+                                        <label class="form-check-label" for="enableProxyCheck">
+                                            Enable Proxy
+                                        </label>
+                                    </div>
+                                    
+                                    <div id="proxySettings" style="display: none;">
+                                        <div class="mb-3">
+                                            <label for="proxyType" class="form-label">Proxy Type</label>
+                                            <select class="form-select" id="proxyType">
+                                                <option value="http">HTTP</option>
+                                                <option value="https">HTTPS</option>
+                                                <option value="socks4">SOCKS4</option>
+                                                <option value="socks5">SOCKS5</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="proxyHost" class="form-label">Proxy Host</label>
+                                            <input type="text" class="form-control" id="proxyHost" placeholder="proxy.example.com">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="proxyPort" class="form-label">Port</label>
+                                            <input type="number" class="form-control" id="proxyPort" placeholder="8080" min="1" max="65535">
+                                        </div>
+                                        
+                                        <div class="proxy-auth-toggle" id="proxyAuthToggle">
+                                            <i class="bi bi-key"></i> Use Authentication
+                                        </div>
+                                        
+                                        <div class="proxy-auth-fields" id="proxyAuthFields" style="display: none;">
+                                            <div class="mb-3">
+                                                <label for="proxyUsername" class="form-label">Username</label>
+                                                <input type="text" class="form-control" id="proxyUsername">
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="proxyPassword" class="form-label">Password</label>
+                                                <input type="password" class="form-control" id="proxyPassword">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="proxyBypass" class="form-label">Bypass List (comma separated)</label>
+                                            <input type="text" class="form-control" id="proxyBypass" placeholder="localhost,127.0.0.1">
+                                            <small class="text-muted">Hosts to bypass proxy</small>
+                                        </div>
+                                        
+                                        <button class="btn btn-sm btn-outline-light" id="testProxyBtn">
+                                            <i class="bi bi-check-circle"></i> Test Connection
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <i class="bi bi-terminal"></i> Console Output
+            </div>
+            <div class="card-body">
+                <div class="log-container" id="logContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>YouTube Downloader GUI - Powered by yt-dlp | Not affiliated with YouTube or Google</p>
+    </div>
+
+    <div class="toast-container">
+        <div class="toast" id="notificationToast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toastBody">
+                <!-- Toast message will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const urlInput = document.getElementById('urlInput');
+            const clearUrlsBtn = document.getElementById('clearUrlsBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const updateBtn = document.getElementById('updateBtn');
+            const urlList = document.getElementById('urlList');
+            const logContainer = document.getElementById('logContainer');
+            const browsePathBtn = document.getElementById('browsePathBtn');
+            const toast = new bootstrap.Toast(document.getElementById('notificationToast'));
+            const toastBody = document.getElementById('toastBody');
+
+            // Basic Options
+            const qualitySelect = document.getElementById('qualitySelect');
+            const formatSelect = document.getElementById('formatSelect');
+            const embedSubsCheck = document.getElementById('embedSubsCheck');
+            const embedThumbCheck = document.getElementById('embedThumbCheck');
+            const writeDescCheck = document.getElementById('writeDescCheck');
+            const writeMetaCheck = document.getElementById('writeMetaCheck');
+            const writeSubCheck = document.getElementById('writeSubCheck');
+            const writeCommentsCheck = document.getElementById('writeCommentsCheck');
+            const writeThumbnailCheck = document.getElementById('writeThumbnailCheck');
+            const persianSubsCheck = document.getElementById('persianSubsCheck');
+            const subtitleLangs = document.getElementById('subtitleLangs');
+			const subtitleFormat = document.getElementById('subtitleFormat');
+            const outputTemplate = document.getElementById('outputTemplate');
+            const downloadPath = document.getElementById('downloadPath');
+            const manualFormat = document.getElementById('manualFormat');
+            const advancedFormatToggle = document.getElementById('advancedFormatToggle');
+            const advancedFormatOptions = document.getElementById('advancedFormatOptions');
+
+            // Authentication Options
+            const enableAuthCheck = document.getElementById('enableAuthCheck');
+            const authSettings = document.getElementById('authSettings');
+            const authStatus = document.getElementById('authStatus');
+            const browserCookiesMethod = document.getElementById('browserCookiesMethod');
+            const manualLoginMethod = document.getElementById('manualLoginMethod');
+            const cookieFileMethod = document.getElementById('cookieFileMethod');
+            const browserCookiesOptions = document.getElementById('browserCookiesOptions');
+            const manualLoginOptions = document.getElementById('manualLoginOptions');
+            const cookieFileOptions = document.getElementById('cookieFileOptions');
+            const browserProfile = document.getElementById('browserProfile');
+            const authUsername = document.getElementById('authUsername');
+            const authPassword = document.getElementById('authPassword');
+            const auth2fa = document.getElementById('auth2fa');
+            const cookieFile = document.getElementById('cookieFile');
+            const cookieFileName = document.getElementById('cookieFileName');
+            const testAuthBtn = document.getElementById('testAuthBtn');
+
+            // Proxy Options
+            const enableProxyCheck = document.getElementById('enableProxyCheck');
+            const proxySettings = document.getElementById('proxySettings');
+            const proxyType = document.getElementById('proxyType');
+            const proxyHost = document.getElementById('proxyHost');
+            const proxyPort = document.getElementById('proxyPort');
+            const proxyAuthToggle = document.getElementById('proxyAuthToggle');
+            const proxyAuthFields = document.getElementById('proxyAuthFields');
+            const proxyUsername = document.getElementById('proxyUsername');
+            const proxyPassword = document.getElementById('proxyPassword');
+            const proxyBypass = document.getElementById('proxyBypass');
+            const testProxyBtn = document.getElementById('testProxyBtn');
+            const proxyStatus = document.getElementById('proxyStatus');
+
+            // State
+            let downloadQueue = [];
+            let isDownloading = false;
+            let eventSource = null;
+            let selectedAuthMethod = null;
+            let selectedBrowser = null;
+
+            // Initialize
+            loadSettings();
+            updateUrlList();
+
+            // Event Listeners
+            clearUrlsBtn.addEventListener('click', clearUrls);
+            downloadBtn.addEventListener('click', startDownload);
+            updateBtn.addEventListener('click', updateYtDlp);
+            browsePathBtn.addEventListener('click', browsePath);
+            urlInput.addEventListener('input', updateUrlList);
+
+            // Advanced format toggle
+            advancedFormatToggle.addEventListener('click', function() {
+                if (advancedFormatOptions.style.display === 'none') {
+                    advancedFormatOptions.style.display = 'block';
+                    this.querySelector('i').classList.replace('bi-chevron-right', 'bi-chevron-down');
+                } else {
+                    advancedFormatOptions.style.display = 'none';
+                    this.querySelector('i').classList.replace('bi-chevron-down', 'bi-chevron-right');
+                }
+            });
+
+            // Format preset selection
+            document.querySelectorAll('.format-preset').forEach(preset => {
+                preset.addEventListener('click', function() {
+                    document.querySelectorAll('.format-preset').forEach(p => p.classList.remove('selected'));
+                    this.classList.add('selected');
+                    manualFormat.value = this.dataset.format;
+                    qualitySelect.value = ''; // Clear dropdown when using manual format
+                });
+            });
+
+            // Authentication event listeners
+            enableAuthCheck.addEventListener('change', toggleAuthSettings);
+            browserCookiesMethod.addEventListener('click', () => selectAuthMethod('browser'));
+            manualLoginMethod.addEventListener('click', () => selectAuthMethod('manual'));
+            cookieFileMethod.addEventListener('click', () => selectAuthMethod('file'));
+            cookieFile.addEventListener('change', handleCookieFileSelect);
+            testAuthBtn.addEventListener('click', testAuthentication);
+
+            // Browser selection event listeners
+            document.querySelectorAll('.browser-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.browser-option').forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedBrowser = this.dataset.browser;
+                });
+            });
+
+            // Proxy event listeners
+            enableProxyCheck.addEventListener('change', toggleProxySettings);
+            proxyAuthToggle.addEventListener('click', toggleProxyAuth);
+            testProxyBtn.addEventListener('click', testProxyConnection);
+
+            // Save settings when changed
+			[qualitySelect, formatSelect, outputTemplate, downloadPath, proxyType, proxyHost, proxyPort, proxyUsername, proxyPassword, proxyBypass, browserProfile, authUsername, auth2fa, manualFormat, subtitleLangs, subtitleFormat].forEach(element => {
+				element.addEventListener('change', saveSettings);
+			});
+
+            [embedSubsCheck, embedThumbCheck, writeDescCheck, writeMetaCheck, writeSubCheck, writeCommentsCheck, writeThumbnailCheck, persianSubsCheck, enableProxyCheck, enableAuthCheck].forEach(element => {
+                element.addEventListener('change', saveSettings);
+            });
+
+            // Functions
+            function clearUrls() {
+                urlInput.value = '';
+                updateUrlList();
+                showToast('URLs cleared', 'info');
+            }
+
+            function updateUrlList() {
+                const urls = urlInput.value.trim().split('\n').filter(url => url.trim() !== '');
+                downloadQueue = urls.map(url => ({
+                    url: url.trim(),
+                    status: 'pending',
+                    progress: 0
+                }));
+
+                renderUrlList();
+            }
+
+            function renderUrlList() {
+                urlList.innerHTML = '';
+                
+                if (downloadQueue.length === 0) {
+                    urlList.innerHTML = '<p class="text-muted">No URLs in queue</p>';
+                    return;
+                }
+
+                downloadQueue.forEach((item, index) => {
+                    const urlItem = document.createElement('div');
+                    urlItem.className = 'url-item';
+                    
+                    const urlText = document.createElement('div');
+                    urlText.className = 'text-truncate';
+                    urlText.textContent = item.url;
+                    
+                    const urlProgress = document.createElement('div');
+                    urlProgress.className = 'url-progress';
+                    
+                    const urlProgressBar = document.createElement('div');
+                    urlProgressBar.className = 'url-progress-bar';
+                    urlProgressBar.style.width = `${item.progress}%`;
+                    
+                    urlProgress.appendChild(urlProgressBar);
+                    
+                    const urlStatus = document.createElement('div');
+                    urlStatus.className = 'url-status';
+                    
+                    let statusBadge = '';
+                    switch (item.status) {
+                        case 'pending':
+                            statusBadge = '<span class="status-badge status-pending">Pending</span>';
+                            break;
+                        case 'downloading':
+                            statusBadge = '<span class="status-badge status-downloading"><span class="spinner-border spinner-border-sm me-1"></span>Downloading</span>';
+                            break;
+                        case 'completed':
+                            statusBadge = '<span class="status-badge status-completed"><i class="bi bi-check-circle me-1"></i>Completed</span>';
+                            break;
+                        case 'error':
+                            statusBadge = '<span class="status-badge status-error"><i class="bi bi-exclamation-circle me-1"></i>Error</span>';
+                            break;
+                    }
+                    
+                    urlStatus.innerHTML = statusBadge;
+                    
+                    urlItem.appendChild(urlText);
+                    urlItem.appendChild(urlProgress);
+                    urlItem.appendChild(urlStatus);
+                    
+                    urlList.appendChild(urlItem);
+                });
+            }
+
+            // Authentication functions
+            function toggleAuthSettings() {
+                if (enableAuthCheck.checked) {
+                    authSettings.style.display = 'block';
+                    authStatus.classList.remove('inactive');
+                    authStatus.classList.add('active');
+                } else {
+                    authSettings.style.display = 'none';
+                    authStatus.classList.remove('active');
+                    authStatus.classList.add('inactive');
+                }
+            }
+
+            function selectAuthMethod(method) {
+                // Clear previous selection
+                document.querySelectorAll('.auth-method').forEach(el => el.classList.remove('selected'));
+                
+                // Hide all options
+                browserCookiesOptions.style.display = 'none';
+                manualLoginOptions.style.display = 'none';
+                cookieFileOptions.style.display = 'none';
+                
+                // Show selected options and mark as selected
+                selectedAuthMethod = method;
+                
+                switch(method) {
+                    case 'browser':
+                        browserCookiesMethod.classList.add('selected');
+                        browserCookiesOptions.style.display = 'block';
+                        break;
+                    case 'manual':
+                        manualLoginMethod.classList.add('selected');
+                        manualLoginOptions.style.display = 'block';
+                        break;
+                    case 'file':
+                        cookieFileMethod.classList.add('selected');
+                        cookieFileOptions.style.display = 'block';
+                        break;
+                }
+            }
+
+            function handleCookieFileSelect(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    cookieFileName.textContent = file.name;
+                } else {
+                    cookieFileName.textContent = 'Choose cookies.txt file';
+                }
+            }
+
+            function testAuthentication() {
+                if (!selectedAuthMethod) {
+                    showToast('Please select an authentication method', 'warning');
+                    return;
+                }
+
+                testAuthBtn.disabled = true;
+                testAuthBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Testing...';
+                
+                addLog('Testing authentication...', 'info');
+                
+                // Simulate authentication test
+                setTimeout(() => {
+                    testAuthBtn.disabled = false;
+                    testAuthBtn.innerHTML = '<i class="bi bi-check-circle"></i> Test Authentication';
+                    
+                    // Random success/failure for demo
+                    const success = Math.random() > 0.3;
+                    
+                    if (success) {
+                        addLog('Authentication successful!', 'success');
+                        showToast('Authentication successful!', 'success');
+                    } else {
+                        addLog('Authentication failed!', 'error');
+                        showToast('Authentication failed!', 'error');
+                    }
+                }, 2000);
+            }
+
+            // Modified startDownload function
+            async function startDownload() {
+                if (isDownloading) {
+                    showToast('Download already in progress', 'warning');
+                    return;
+                }
+
+                if (downloadQueue.length === 0) {
+                    showToast('No URLs to download', 'warning');
+                    return;
+                }
+
+                isDownloading = true;
+                downloadBtn.disabled = true;
+                downloadBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Downloading...';
+                
+                // Clear previous logs
+                logContainer.innerHTML = '';
+                addLog('Starting download process...', 'info');
+                
+                // Build options object
+                const options = {
+					quality: manualFormat.value || qualitySelect.value, // Use manual format if provided
+					format: formatSelect.value,
+					embedSubs: embedSubsCheck.checked,
+					embedThumb: embedThumbCheck.checked,
+					writeDesc: writeDescCheck.checked,
+					writeMeta: writeMetaCheck.checked,
+					writeSub: writeSubCheck.checked,
+					writeComments: writeCommentsCheck.checked,
+					writeThumbnail: writeThumbnailCheck.checked,
+					persianSubs: persianSubsCheck.checked,
+					subtitleLangs: subtitleLangs.value,
+					subtitleFormat: subtitleFormat.value,  // Add this line
+					outputTemplate: outputTemplate.value,
+					downloadPath: downloadPath.value,
+					proxy: {
+						enabled: enableProxyCheck.checked,
+						type: proxyType.value,
+						host: proxyHost.value,
+						port: proxyPort.value,
+						username: proxyUsername.value,
+						password: proxyPassword.value,
+						bypass: proxyBypass.value
+					},
+					authentication: {
+						enabled: enableAuthCheck.checked,
+						method: selectedAuthMethod,
+						browser: selectedBrowser,
+						profile: browserProfile.value,
+						username: authUsername.value,
+						password: authPassword.value,
+						twoFactor: auth2fa.value,
+						cookieFile: cookieFile.files[0] ? cookieFile.files[0].name : null
+					}
+				};
+                
+                // Get URLs
+                const urls = downloadQueue.map(item => item.url);
+                
+                try {
+                    // Send download request to backend
+                    const response = await fetch('http://localhost:5000/download', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ urls, options })
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `Server responded with status: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // Start streaming output
+                        startStreaming();
+                        showToast('Downloads started!', 'success');
+                    } else {
+                        addLog(`Error: ${result.error}`, 'error');
+                        showToast(`Error: ${result.error}`, 'error');
+                        resetDownloadState();
+                    }
+                } catch (error) {
+                    addLog(`Network error: ${error.message}`, 'error');
+                    showToast(`Network error: ${error.message}`, 'error');
+                    resetDownloadState();
+                }
+            }
+
+            // New function to stream output from backend
+            function startStreaming() {
+                // Set all URLs to downloading status
+                downloadQueue.forEach(item => {
+                    item.status = 'downloading';
+                });
+                renderUrlList();
+                
+                // Create EventSource for streaming
+                eventSource = new EventSource('http://localhost:5000/stream');
+                
+				eventSource.onmessage = function(event) {
+					const data = JSON.parse(event.data);
+					
+					if (data.type === 'log') {
+						addLog(data.message, 'info');
+						
+						// Try to extract progress from log message
+						const progressMatch = data.message.match(/\[download\]\s+(\d+(?:\.\d+)?)%/);
+						if (progressMatch) {
+							const progress = parseFloat(progressMatch[1]);
+							if (data.url_index !== undefined && downloadQueue[data.url_index]) {
+								downloadQueue[data.url_index].progress = progress;
+								renderUrlList();
+							}
+						}
+					} else if (data.type === 'warning') {
+						addLog(data.message, 'warning');
+					} else if (data.type === 'complete') {
+						if (data.url_index !== undefined && downloadQueue[data.url_index]) {
+							if (data.return_code === 0) {
+								downloadQueue[data.url_index].status = 'completed';
+								downloadQueue[data.url_index].progress = 100;
+								addLog(`Download completed: ${downloadQueue[data.url_index].url}`, 'success');
+							} else {
+								downloadQueue[data.url_index].status = 'error';
+								addLog(`Download failed: ${downloadQueue[data.url_index].url}`, 'error');
+							}
+							renderUrlList();
+						}
+					} else if (data.type === 'error') {
+						if (data.url_index !== undefined && downloadQueue[data.url_index]) {
+							downloadQueue[data.url_index].status = 'error';
+							addLog(`Error: ${data.message}`, 'error');
+							renderUrlList();
+						}
+					} else if (data.type === 'heartbeat') {
+						// Ignore heartbeat messages
+					}
+					
+					// Check if all downloads are complete
+					if (downloadQueue.every(item => item.status === 'completed' || item.status === 'error')) {
+						eventSource.close();
+						resetDownloadState();
+						showToast('All downloads completed!', 'success');
+					}
+				};
+                
+                eventSource.onerror = function(event) {
+                    addLog('Connection to server lost', 'error');
+                    eventSource.close();
+                    resetDownloadState();
+                };
+            }
+
+            // New function to reset download state
+            function resetDownloadState() {
+                isDownloading = false;
+                downloadBtn.disabled = false;
+                downloadBtn.innerHTML = '<i class="bi bi-download"></i> Download';
+                
+                if (eventSource) {
+                    eventSource.close();
+                    eventSource = null;
+                }
+            }
+
+            // Modified updateYtDlp function with better error handling
+            async function updateYtDlp() {
+                updateBtn.disabled = true;
+                updateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating...';
+                
+                addLog('Checking for yt-dlp updates...', 'info');
+                
+                try {
+                    const response = await fetch('http://localhost:5000/update', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `Server responded with status: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        addLog(result.message, 'success');
+                        showToast(result.message, 'success');
+                    } else {
+                        addLog(`Update failed: ${result.error}`, 'error');
+                        showToast(`Update failed: ${result.error}`, 'error');
+                    }
+                } catch (error) {
+                    addLog(`Network error: ${error.message}`, 'error');
+                    showToast(`Network error: ${error.message}`, 'error');
+                } finally {
+                    updateBtn.disabled = false;
+                    updateBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Update';
+                }
+            }
+
+            // The rest of the functions remain the same
+            function browsePath() {
+                downloadPath.value = './downloads';
+                saveSettings();
+                showToast('Download path set to ./downloads', 'info');
+            }
+
+            function toggleProxySettings() {
+                if (enableProxyCheck.checked) {
+                    proxySettings.style.display = 'block';
+                    proxyStatus.classList.remove('inactive');
+                    proxyStatus.classList.add('active');
+                } else {
+                    proxySettings.style.display = 'none';
+                    proxyStatus.classList.remove('active');
+                    proxyStatus.classList.add('inactive');
+                }
+            }
+
+            function toggleProxyAuth() {
+                if (proxyAuthFields.style.display === 'none') {
+                    proxyAuthFields.style.display = 'block';
+                    proxyAuthToggle.innerHTML = '<i class="bi bi-key-fill"></i> Hide Authentication';
+                } else {
+                    proxyAuthFields.style.display = 'none';
+                    proxyAuthToggle.innerHTML = '<i class="bi bi-key"></i> Use Authentication';
+                }
+            }
+
+            function testProxyConnection() {
+                if (!proxyHost.value || !proxyPort.value) {
+                    showToast('Please enter proxy host and port', 'warning');
+                    return;
+                }
+
+                testProxyBtn.disabled = true;
+                testProxyBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Testing...';
+                
+                addLog(`Testing proxy connection to ${proxyType.value}://${proxyHost.value}:${proxyPort.value}...`, 'info');
+                
+                // Simulate proxy test
+                setTimeout(() => {
+                    testProxyBtn.disabled = false;
+                    testProxyBtn.innerHTML = '<i class="bi bi-check-circle"></i> Test Connection';
+                    
+                    // Random success/failure for demo
+                    const success = Math.random() > 0.3;
+                    
+                    if (success) {
+                        addLog('Proxy connection successful!', 'success');
+                        showToast('Proxy connection successful!', 'success');
+                    } else {
+                        addLog('Proxy connection failed!', 'error');
+                        showToast('Proxy connection failed!', 'error');
+                    }
+                }, 2000);
+            }
+
+            function addLog(message, type = 'info') {
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry log-${type}`;
+                
+                const timestamp = new Date().toLocaleTimeString();
+                logEntry.textContent = `[${timestamp}] ${message}`;
+                
+                logContainer.appendChild(logEntry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+
+            function showToast(message, type = 'info') {
+                toastBody.textContent = message;
+                toast.show();
+            }
+
+            function saveSettings() {
+                const settings = {
+                    quality: qualitySelect.value,
+                    format: formatSelect.value,
+                    embedSubs: embedSubsCheck.checked,
+                    embedThumb: embedThumbCheck.checked,
+                    writeDesc: writeDescCheck.checked,
+                    writeMeta: writeMetaCheck.checked,
+                    writeSub: writeSubCheck.checked,
+                    writeComments: writeCommentsCheck.checked,
+                    writeThumbnail: writeThumbnailCheck.checked,
+                    persianSubs: persianSubsCheck.checked,
+                    subtitleLangs: subtitleLangs.value,
+					subtitleFormat: subtitleFormat.value,
+                    outputTemplate: outputTemplate.value,
+                    downloadPath: downloadPath.value,
+                    manualFormat: manualFormat.value,
+                    proxy: {
+                        enabled: enableProxyCheck.checked,
+                        type: proxyType.value,
+                        host: proxyHost.value,
+                        port: proxyPort.value,
+                        username: proxyUsername.value,
+                        password: proxyPassword.value,
+                        bypass: proxyBypass.value
+                    },
+                    authentication: {
+                        enabled: enableAuthCheck.checked,
+                        method: selectedAuthMethod,
+                        browser: selectedBrowser,
+                        profile: browserProfile.value,
+                        username: authUsername.value,
+                        twoFactor: auth2fa.value
+                    }
+                };
+                
+                localStorage.setItem('ytDlpSettings', JSON.stringify(settings));
+            }
+
+            function loadSettings() {
+                const savedSettings = localStorage.getItem('ytDlpSettings');
+                
+                if (savedSettings) {
+                    const settings = JSON.parse(savedSettings);
+                    
+                    // Load basic settings
+                    qualitySelect.value = settings.quality || '';
+                    formatSelect.value = settings.format || '';
+                    embedSubsCheck.checked = settings.embedSubs || false;
+                    embedThumbCheck.checked = settings.embedThumb || false;
+                    writeDescCheck.checked = settings.writeDesc || false;
+                    writeMetaCheck.checked = settings.writeMeta || false;
+                    writeSubCheck.checked = settings.writeSub || false;
+                    writeCommentsCheck.checked = settings.writeComments || false;
+                    writeThumbnailCheck.checked = settings.writeThumbnail || false;
+                    persianSubsCheck.checked = settings.persianSubs || false;
+                    subtitleLangs.value = settings.subtitleLangs || '';
+					subtitleFormat.value = settings.subtitleFormat || 'srt';  
+                    outputTemplate.value = settings.outputTemplate || '%(title)s (%(upload_date)s) [%(id)s].%(ext)s';
+                    downloadPath.value = settings.downloadPath || './downloads';
+                    manualFormat.value = settings.manualFormat || '';
+                    
+                    // Load proxy settings
+                    if (settings.proxy) {
+                        enableProxyCheck.checked = settings.proxy.enabled || false;
+                        proxyType.value = settings.proxy.type || 'http';
+                        proxyHost.value = settings.proxy.host || '';
+                        proxyPort.value = settings.proxy.port || '';
+                        proxyUsername.value = settings.proxy.username || '';
+                        proxyPassword.value = settings.proxy.password || '';
+                        proxyBypass.value = settings.proxy.bypass || '';
+                        
+                        if (enableProxyCheck.checked) {
+                            toggleProxySettings();
+                        }
+                    }
+                    
+                    // Load authentication settings
+                    if (settings.authentication) {
+                        enableAuthCheck.checked = settings.authentication.enabled || false;
+                        selectedAuthMethod = settings.authentication.method || null;
+                        selectedBrowser = settings.authentication.browser || null;
+                        browserProfile.value = settings.authentication.profile || '';
+                        authUsername.value = settings.authentication.username || '';
+                        auth2fa.value = settings.authentication.twoFactor || '';
+                        
+                        if (enableAuthCheck.checked) {
+                            toggleAuthSettings();
+                            if (selectedAuthMethod) {
+                                selectAuthMethod(selectedAuthMethod);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
