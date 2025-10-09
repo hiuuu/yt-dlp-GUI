@@ -469,7 +469,7 @@
                 YouTube Downloader
             </a>
             <div class="d-flex align-items-center">
-                <span class="version-info">yt-dlp </span>
+                <span class="version-info">yt-dlp</span>
                 <button class="btn btn-outline-light btn-sm ms-3" id="updateBtn">
                     <i class="bi bi-arrow-clockwise"></i> Update
                 </button>
@@ -1318,14 +1318,10 @@
 					if (data.type === 'log') {
 						addLog(data.message, 'info');
 						
-						// Try to extract progress from log message
-						const progressMatch = data.message.match(/\[download\]\s+(\d+(?:\.\d+)?)%/);
-						if (progressMatch) {
-							const progress = parseFloat(progressMatch[1]);
-							if (data.url_index !== undefined && downloadQueue[data.url_index]) {
-								downloadQueue[data.url_index].progress = progress;
-								renderUrlList();
-							}
+						// Update progress if available
+						if (data.progress !== undefined && data.url_index !== undefined && downloadQueue[data.url_index]) {
+							downloadQueue[data.url_index].progress = data.progress;
+							renderUrlList();
 						}
 					} else if (data.type === 'warning') {
 						addLog(data.message, 'warning');
@@ -1334,10 +1330,10 @@
 							if (data.return_code === 0) {
 								downloadQueue[data.url_index].status = 'completed';
 								downloadQueue[data.url_index].progress = 100;
-								addLog(`Download completed: ${downloadQueue[data.url_index].url}`, 'success');
+								addLog(`Download completed: ${data.url}`, 'success');
 							} else {
 								downloadQueue[data.url_index].status = 'error';
-								addLog(`Download failed: ${downloadQueue[data.url_index].url}`, 'error');
+								addLog(`Download failed: ${data.url}`, 'error');
 							}
 							renderUrlList();
 						}
@@ -1352,7 +1348,7 @@
 					}
 					
 					// Check if all downloads are complete
-					if (downloadQueue.every(item => item.status === 'completed' || item.status === 'error')) {
+					if (downloadQueue.length > 0 && downloadQueue.every(item => item.status === 'completed' || item.status === 'error')) {
 						eventSource.close();
 						resetDownloadState();
 						showToast('All downloads completed!', 'success');
@@ -1588,5 +1584,4 @@
         });
     </script>
 </body>
-
 </html>
